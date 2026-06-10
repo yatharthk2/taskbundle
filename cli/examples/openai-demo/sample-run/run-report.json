@@ -1,0 +1,68 @@
+{
+  "image": "taskbundle-openai-demo:v1",
+  "runtime": "docker",
+  "digest": "sha256:0ac0cdac84d251e65f5875e866851b41d79e0eaafc372631150714f7af46d6fa",
+  "network": "none",
+  "solver": {
+    "kind": "command",
+    "command": "python /opt/openai_agent.py",
+    "exit": 0,
+    "log": "openai_agent: model=gpt-4o-mini, 3 repo file(s) in context\nopenai_agent: wrote 1 file(s): calc/core.py",
+    "solver_env": [
+      "OPENAI_API_KEY"
+    ],
+    "patch_lines": 9
+  },
+  "resolved": true,
+  "outcome": "resolved",
+  "baseline": {
+    "ok": true,
+    "pass2pass": {
+      "passed": [
+        "test_add_zero_right_identity",
+        "test_add_zero_zero"
+      ],
+      "failed": [],
+      "error": [],
+      "skipped": []
+    },
+    "fail2pass": {
+      "passed": [],
+      "failed": [
+        "test_add_positive",
+        "test_add_larger"
+      ],
+      "error": [],
+      "skipped": []
+    }
+  },
+  "pass2pass": {
+    "passed": [
+      "test_add_zero_right_identity",
+      "test_add_zero_zero"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "fail2pass": {
+    "passed": [
+      "test_add_positive",
+      "test_add_larger"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "regressions": [],
+  "resolved_tests": [
+    "test_add_positive",
+    "test_add_larger"
+  ],
+  "unresolved_tests": [],
+  "report_path": "/tmp/llm-step4-report.json",
+  "artifacts_root": "/tmp/llm-step4-art",
+  "id": 1,
+  "task_id": "openai-demo",
+  "artifacts": "/tmp/llm-step4-art/1"
+}

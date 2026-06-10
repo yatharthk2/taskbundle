@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taskbundle"
+version = "0.1.0"
+description = "Containerized task-bundle CLI for LLM coding benchmarks (SWE-bench style)."
+requires-python = ">=3.9"
+dependencies = ["typer>=0.12", "click>=8"]  # Typer (+ click, imported directly in main()'s exit-code shim); everything else is stdlib
+
+[project.optional-dependencies]
+test = ["pytest>=7"]  # `pip install -e ./cli[test]` to run the suite under pytest
+
+[project.scripts]
+task = "task:main"  # entry point at the cli/ root
+
+[tool.setuptools]
+py-modules = ["task", "cli_helpers", "run_helpers"]   # entry point + its split-out helper modules
+packages = ["taskbundle"]   # the library; the OpenAI agent (cli/solvers/) is a template to vendor into a bundle, not a shipped package
+
+[tool.pytest.ini_options]
+pythonpath = ["."]          # rootdir is cli/ (this file); put it on sys.path for `import task`
+testpaths = ["tests"]

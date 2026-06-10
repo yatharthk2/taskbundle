@@ -1,0 +1,68 @@
+{
+  "image": "taskbundle-openai-demo:v1",
+  "runtime": "docker",
+  "digest": "sha256:0e2b2c6295300e5bf3e14bb8f23ca16aec9faa62f8512c81f5efa2307c14233c",
+  "network": "none",
+  "solver": {
+    "kind": "command",
+    "command": "python /opt/openai_agent.py",
+    "exit": 2,
+    "log": "openai_agent: model=gpt-4o-mini, 3 repo file(s) in context\nopenai_agent: OPENAI_API_KEY is not set in the environment",
+    "solver_env": [
+      "OPENAI_API_"
+    ],
+    "patch_lines": 0
+  },
+  "resolved": false,
+  "outcome": "solver_error",
+  "baseline": {
+    "ok": true,
+    "pass2pass": {
+      "passed": [
+        "test_add_zero_right_identity",
+        "test_add_zero_zero"
+      ],
+      "failed": [],
+      "error": [],
+      "skipped": []
+    },
+    "fail2pass": {
+      "passed": [],
+      "failed": [
+        "test_add_positive",
+        "test_add_larger"
+      ],
+      "error": [],
+      "skipped": []
+    }
+  },
+  "pass2pass": {
+    "passed": [
+      "test_add_zero_right_identity",
+      "test_add_zero_zero"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "fail2pass": {
+    "passed": [],
+    "failed": [
+      "test_add_positive",
+      "test_add_larger"
+    ],
+    "error": [],
+    "skipped": []
+  },
+  "regressions": [],
+  "resolved_tests": [],
+  "unresolved_tests": [
+    "test_add_positive",
+    "test_add_larger"
+  ],
+  "report_path": "cli/examples/openai-demo/run-report.json",
+  "artifacts_root": ".taskbundle/artifacts",
+  "id": 9,
+  "task_id": "openai-demo",
+  "artifacts": ".taskbundle/artifacts/9"
+}

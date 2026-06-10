@@ -1,0 +1,62 @@
+{
+  "image": "taskbundle-hello-task:v1",
+  "runtime": "docker",
+  "digest": "sha256:54655ca5d9b984b0f87707ca2d73e67bfde75525ab63b4b75fa4a0f426ba110a",
+  "network": "none",
+  "solver": {
+    "kind": "golden",
+    "command": "apply patch.diff",
+    "exit": 0,
+    "patch_lines": 13
+  },
+  "resolved": true,
+  "outcome": "resolved",
+  "baseline": {
+    "ok": true,
+    "pass2pass": {
+      "passed": [
+        "test_factorial_zero",
+        "test_factorial_one"
+      ],
+      "failed": [],
+      "error": [],
+      "skipped": []
+    },
+    "fail2pass": {
+      "passed": [],
+      "failed": [
+        "test_factorial_five",
+        "test_factorial_six"
+      ],
+      "error": [],
+      "skipped": []
+    }
+  },
+  "pass2pass": {
+    "passed": [
+      "test_factorial_zero",
+      "test_factorial_one"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "fail2pass": {
+    "passed": [
+      "test_factorial_five",
+      "test_factorial_six"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "regressions": [],
+  "resolved_tests": [
+    "test_factorial_five",
+    "test_factorial_six"
+  ],
+  "unresolved_tests": [],
+  "report_path": "cli/examples/hello-task/run-report.json",
+  "id": 5,
+  "task_id": "hello-task"
+}

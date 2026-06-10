@@ -1,0 +1,6 @@
+{
+  "id": "openai-demo",
+  "repo": "repo",
+  "commit": "v1",
+  "smoke_cmd": "python -c 'import calc' && python -m pytest --version"
+}

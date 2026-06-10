@@ -1,0 +1,87 @@
+{
+  "image": "taskbundle-ansible-combine-vars:f7234968d241",
+  "runtime": "docker",
+  "digest": "sha256:dd3820216b3bf842acb720bdbb4dbae0429eea0abf2db16d2dadd8df33e7a8d2",
+  "network": "none",
+  "solver": {
+    "kind": "golden",
+    "command": "apply patch.diff",
+    "exit": 0,
+    "patch_lines": 57
+  },
+  "resolved": true,
+  "outcome": "resolved",
+  "baseline": {
+    "ok": true,
+    "pass2pass": {
+      "passed": [
+        "test_combine_vars_improper_args",
+        "test_combine_vars_merge",
+        "test_merge_hash_non_recursive_and_list_append",
+        "test_merge_hash_non_recursive_and_list_append_rp",
+        "test_merge_hash_non_recursive_and_list_keep",
+        "test_merge_hash_non_recursive_and_list_prepend",
+        "test_merge_hash_non_recursive_and_list_prepend_rp",
+        "test_merge_hash_non_recursive_and_list_replace",
+        "test_merge_hash_recursive_and_list_append",
+        "test_merge_hash_recursive_and_list_append_rp",
+        "test_merge_hash_recursive_and_list_keep",
+        "test_merge_hash_recursive_and_list_prepend",
+        "test_merge_hash_recursive_and_list_prepend_rp",
+        "test_merge_hash_recursive_and_list_replace",
+        "test_merge_hash_simple"
+      ],
+      "failed": [],
+      "error": [],
+      "skipped": []
+    },
+    "fail2pass": {
+      "passed": [],
+      "failed": [
+        "test_combine_vars_replace"
+      ],
+      "error": [],
+      "skipped": []
+    }
+  },
+  "pass2pass": {
+    "passed": [
+      "test_combine_vars_improper_args",
+      "test_combine_vars_merge",
+      "test_merge_hash_non_recursive_and_list_append",
+      "test_merge_hash_non_recursive_and_list_append_rp",
+      "test_merge_hash_non_recursive_and_list_keep",
+      "test_merge_hash_non_recursive_and_list_prepend",
+      "test_merge_hash_non_recursive_and_list_prepend_rp",
+      "test_merge_hash_non_recursive_and_list_replace",
+      "test_merge_hash_recursive_and_list_append",
+      "test_merge_hash_recursive_and_list_append_rp",
+      "test_merge_hash_recursive_and_list_keep",
+      "test_merge_hash_recursive_and_list_prepend",
+      "test_merge_hash_recursive_and_list_prepend_rp",
+      "test_merge_hash_recursive_and_list_replace",
+      "test_merge_hash_simple"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "fail2pass": {
+    "passed": [
+      "test_combine_vars_replace"
+    ],
+    "failed": [],
+    "error": [],
+    "skipped": []
+  },
+  "regressions": [],
+  "resolved_tests": [
+    "test_combine_vars_replace"
+  ],
+  "unresolved_tests": [],
+  "report_path": "examples/ansible-combine-vars/run-report.json",
+  "artifacts_root": ".taskbundle/artifacts",
+  "id": 13,
+  "task_id": "ansible-combine-vars",
+  "artifacts": ".taskbundle/artifacts/13"
+}

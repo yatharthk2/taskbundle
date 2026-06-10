@@ -1,0 +1,11 @@
+{
+  "id": "ansible-combine-vars",
+  "repo": "https://github.com/ansible/ansible",
+  "commit": "f7234968d241d7171aadb1e873a67510753f3163",
+  "smoke_cmd": "python -c 'import ansible.utils.vars' && python -m pytest --version",
+  "_source": {
+    "dataset": "ScaleAI/SWE-bench_Pro",
+    "instance_id": "instance_ansible__ansible-0ea40e09d1b35bcb69ff4d9cecf3d0defa4b36e8-v30a923fb5c164d6cd18280c02422f75e611e8fb2",
+    "fail_to_pass": ["test/units/utils/test_vars.py::TestVariableUtils::test_combine_vars_replace"]
+  }
+}
