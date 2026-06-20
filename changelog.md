@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 — 2026-06-19
+
+First public release.
 
 - **LLM solver support**: a stdlib-only OpenAI agent (`cli/solvers/openai_agent.py`) runnable as a solver command, plus `--solver-env NAME` to forward a host env var (e.g. an API key) into the box by name; isolation and secret hygiene preserved. Demo bundle: `cli/examples/openai-demo/`.
 - **Audited errors**: unexpected exceptions are caught, logged to the ledger, and shown as a clean one-line message with exit `70` (set `TASKBUNDLE_DEBUG=1` for the traceback) instead of a bare crash.

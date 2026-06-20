@@ -1,0 +1,46 @@
+# Runs on every push to main and every PR. Keeps the package green and always
+# buildable, so a publish (see publish.yml) is never the first time it's exercised.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install the package (pulls Typer + click)
+        run: python -m pip install ./cli
+      - name: Run the suite
+        # stdlib unittest, no extra deps; the end-to-end container test auto-skips
+        # on runners without a Docker runtime.
+        run: python -m unittest discover -s cli/tests -t cli
+
+  build:
+    name: Build & twine check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build sdist + wheel and validate metadata
+        working-directory: cli
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+          python -m twine check dist/*
