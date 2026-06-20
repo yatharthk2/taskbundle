@@ -1,20 +1,16 @@
-# Build and publish `taskbundle` to (Test)PyPI.
+# Build and publish `taskbundle` to (Test)PyPI — moss-cli-style flow.
 #
-# Two ways to run it:
-#   • publish a GitHub Release  →  Releases ▸ "Draft a new release" ▸ create tag vX.Y.Z ▸ Publish  (→ PyPI)
-#       GitHub creates the tag for you, so there's no local `git tag` / `git push` — the tag is part of CI/CD.
-#   • manually from the UI      →  Actions ▸ Publish ▸ "Run workflow"  (pick testpypi / pypi) — for rehearsals
+# How to run it:  Actions ▸ Publish ▸ "Run workflow" ▸ pick testpypi / pypi.
+#   • the version is read from cli/pyproject.toml (single source of truth — bump it there first)
+#   • every supported Python builds the wheel and smoke-tests it (install + import + `task --help`)
+#   • one job publishes via PyPI Trusted Publishing (OIDC — no tokens/secrets)
+#   • a real PyPI publish then auto-creates and pushes the `vX.Y.Z` git tag
 #
-# Auth is via PyPI Trusted Publishing (OIDC) — no API tokens or secrets to manage.
-# ONE-TIME SETUP before the first run (see the chat summary for the click-path):
-#   1. PyPI:     https://pypi.org/manage/account/publishing/      → add a *pending* publisher
-#   2. TestPyPI: https://test.pypi.org/manage/account/publishing/ → add a *pending* publisher
-#      For each, use:  owner=yatharthk2  repo=taskbundle  workflow=publish.yml  environment=pypi (or testpypi)
+# ONE-TIME SETUP (already done): a *pending publisher* on PyPI and TestPyPI with
+#   owner=yatharthk2  repo=taskbundle  workflow=publish.yml  environment=pypi (or testpypi)
 name: Publish
 
 on:
-  release:
-    types: [published]       # publishing a GitHub Release (which creates the tag) → real PyPI
   workflow_dispatch:
     inputs:
       target:
@@ -26,41 +22,76 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: taskbundle-release
+  cancel-in-progress: false   # let an in-flight release finish; don't cancel a publish mid-upload
+
 jobs:
-  build:
-    name: Build sdist + wheel
+  determine-version:
+    name: Read version from pyproject
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.compute.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Verify the release tag matches the package version
-        if: github.event_name == 'release'
+      - id: compute
+        shell: python
+        run: |
+          import os, tomllib
+          version = tomllib.load(open("cli/pyproject.toml", "rb"))["project"]["version"]
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"version={version}\n")
+          print(f"taskbundle version: {version}")
+
+  build:
+    name: Build + smoke test (py${{ matrix.python }})
+    needs: determine-version
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.determine-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip build twine
+      - name: Build distributions
         working-directory: cli
         run: |
-          pkg=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          tag="${GITHUB_REF_NAME#v}"   # strip the leading v: v0.1.0 -> 0.1.0
-          echo "package version: $pkg   release tag: $GITHUB_REF_NAME"
-          if [ "$pkg" != "$tag" ]; then
-            echo "::error::Release tag '$GITHUB_REF_NAME' != cli/pyproject.toml version '$pkg'. Bump the version (or fix the tag) and re-release."
-            exit 1
-          fi
-      - name: Build & check
-        working-directory: cli          # the package lives in cli/
-        run: |
-          python -m pip install --upgrade build twine
+          rm -rf dist
           python -m build
           python -m twine check dist/*
-      - uses: actions/upload-artifact@v4
+      - name: Smoke test the built wheel
+        shell: bash
+        run: |
+          wheel=$(ls cli/dist/*.whl)
+          python -m pip install --force-reinstall "$wheel"
+          python - <<'PY'
+          import os, taskbundle
+          installed, want = taskbundle.__version__, os.environ["VERSION"]
+          print("imported taskbundle", installed)
+          assert installed == want, f"taskbundle.__version__ {installed!r} != pyproject version {want!r} — bump both"
+          PY
+          task --help > /dev/null && echo "task --help OK"
+      - name: Upload the distribution (once)
+        if: matrix.python == '3.12'      # pure-Python wheel is identical across versions; ship one
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: cli/dist/
 
   publish-testpypi:
     name: Publish → TestPyPI
-    needs: build
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'testpypi'
+    needs: [determine-version, build]
+    if: github.event.inputs.target == 'testpypi'
     runs-on: ubuntu-latest
     environment:
       name: testpypi
@@ -75,20 +106,39 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
 
   publish-pypi:
-    name: Publish → PyPI
-    needs: build
-    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
+    name: Publish → PyPI + tag
+    needs: [determine-version, build]
+    if: github.event.inputs.target == 'pypi'
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/project/taskbundle/
     permissions:
       id-token: write                   # required for trusted publishing
+      contents: write                   # required to push the release tag
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
+      - name: Tag the release
+        env:
+          VERSION: ${{ needs.determine-version.outputs.version }}
+        run: |
+          git fetch --tags --force
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists — leaving it as is"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "v${VERSION}"
+            git push origin "v${VERSION}"
+            echo "Pushed tag v${VERSION}"
+          fi
