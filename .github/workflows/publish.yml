@@ -1,8 +1,9 @@
 # Build and publish `taskbundle` to (Test)PyPI.
 #
 # Two ways to run it:
-#   • push a version tag      →  git tag v0.1.0 && git push origin v0.1.0   (publishes to PyPI)
-#   • manually from the UI    →  Actions ▸ Publish ▸ "Run workflow"         (pick testpypi / pypi)
+#   • publish a GitHub Release  →  Releases ▸ "Draft a new release" ▸ create tag vX.Y.Z ▸ Publish  (→ PyPI)
+#       GitHub creates the tag for you, so there's no local `git tag` / `git push` — the tag is part of CI/CD.
+#   • manually from the UI      →  Actions ▸ Publish ▸ "Run workflow"  (pick testpypi / pypi) — for rehearsals
 #
 # Auth is via PyPI Trusted Publishing (OIDC) — no API tokens or secrets to manage.
 # ONE-TIME SETUP before the first run (see the chat summary for the click-path):
@@ -12,8 +13,8 @@
 name: Publish
 
 on:
-  push:
-    tags: ["v*"]            # e.g. v0.1.0 — always publishes to the real PyPI
+  release:
+    types: [published]       # publishing a GitHub Release (which creates the tag) → real PyPI
   workflow_dispatch:
     inputs:
       target:
@@ -34,6 +35,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Verify the release tag matches the package version
+        if: github.event_name == 'release'
+        working-directory: cli
+        run: |
+          pkg=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          tag="${GITHUB_REF_NAME#v}"   # strip the leading v: v0.1.0 -> 0.1.0
+          echo "package version: $pkg   release tag: $GITHUB_REF_NAME"
+          if [ "$pkg" != "$tag" ]; then
+            echo "::error::Release tag '$GITHUB_REF_NAME' != cli/pyproject.toml version '$pkg'. Bump the version (or fix the tag) and re-release."
+            exit 1
+          fi
       - name: Build & check
         working-directory: cli          # the package lives in cli/
         run: |
@@ -67,7 +79,7 @@ jobs:
   publish-pypi:
     name: Publish → PyPI
     needs: build
-    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
+    if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.target == 'pypi')
     runs-on: ubuntu-latest
     environment:
       name: pypi
