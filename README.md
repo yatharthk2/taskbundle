@@ -1,5 +1,8 @@
 # Taskbundle
 
+[![PyPI version](https://img.shields.io/pypi/v/taskbundle)](https://pypi.org/project/taskbundle/)
+[![Python versions](https://img.shields.io/pypi/pyversions/taskbundle)](https://pypi.org/project/taskbundle/)
+
 Author, validate, and run **SWE-bench-style coding tasks** in reproducible containers.
 
 A task is a **bundle**: a directory with a repo at a commit, a problem statement, a golden patch, and hidden `pass2pass` / `fail2pass` tests. Taskbundle packages it into a Docker image and runs those hidden tests **before and after** a solver (an LLM agent, a script, anything that edits files), so you know exactly which tests it fixed and which it broke.
@@ -43,15 +46,16 @@ Two **isolated** containers: **SOLVE** edits the repo but never sees the hidden 
 
 ## Install
 
-Python ≥ 3.9. Built with [Typer](https://typer.tiangolo.com/); everything else is stdlib. Install with [uv](https://docs.astral.sh/uv/):
+Python ≥ 3.9. Built with [Typer](https://typer.tiangolo.com/); everything else is stdlib.
 
 ```bash
-uv venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
-uv pip install ./cli                   # installs Typer + the `task` command
+pip install taskbundle      # or: uv pip install taskbundle
 task --help
 ```
 
 Docker (or Podman / colima / nerdctl) is needed to build & run images. `task query` and `task init --no-build` work without it.
+
+The example bundles in the quickstart below ship in this repo (not the wheel), so clone the repo to follow along. To hack on taskbundle itself, install from the checkout instead: `pip install -e ./cli` (or `uv pip install ./cli`).
 
 ## Quickstart
 
